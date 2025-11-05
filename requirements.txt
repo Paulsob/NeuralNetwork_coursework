@@ -1,0 +1,9 @@
+flask
+flask-cors
+numpy
+librosa
+soundfile
+joblib
+tensorflow
+scikit-learn
+Pillow

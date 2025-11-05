@@ -1,0 +1,13 @@
+{
+  "models": {
+    "music": {
+      "model_path": "C:\\Users\\psobo\\PycharmProjects\\coursework\\server\\models\\music\\20_32_0.h5",
+      "index_path": "C:\\Users\\psobo\\PycharmProjects\\coursework\\server\\models\\music\\artist20-temp.joblib.pkl",
+      "sample_rate": 22050,
+      "n_mels": 128,
+      "hop_length": 512,
+      "duration_sec": 30,
+      "top_k": 5
+    }
+  }
+}

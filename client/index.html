@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Определение авторства</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<section class="screen screen-header">
+    <h1 class="main-title">Определение авторства изображений, музыки и стихотворений</h1>
+</section>
+
+<section class="screen screen-img">
+    <div class="content-box gradient-purple">
+        <h1>Изображение</h1>
+        <div class="input-row">
+            <input type="file" id="inputImg" accept="audio/*" hidden>
+            <button class="button upload-btn-img" id="uploadBtnImg">Выбрать файл</button>
+            <button class="button predict-btn-img" id="predictBtnImg">Предсказать</button>
+        </div>
+        <p class="file-name" id="fileNameImg">Файл не выбран</p>
+        <p class="output" id="outputImg"></p>
+    </div>
+</section>
+
+<section class="screen screen-music">
+    <div class="content-box gradient-orange">
+        <h1>Музыка</h1>
+
+        <div class="input-row">
+            <input type="file" id="inputMusic" accept="audio/*" hidden>
+            <button class="button upload-btn-music" id="uploadBtnMusic">Выбрать файл</button>
+            <button class="button predict-btn-music" id="predictBtnMusic">Предсказать</button>
+        </div>
+        <p class="file-name" id="fileNameMusic">Файл не выбран</p>
+        <p class="output" id="outputMusic"></p>
+    </div>
+</section>
+
+<section class="screen screen-txt">
+    <div class="content-box gradient-beige">
+        <h1 class="text_name">Текст</h1>
+
+        <div class="input-row">
+            <input type="file" id="inputTxt" accept="audio/*" hidden>
+            <button class="button upload-btn-txt" id="uploadBtnTxt">Выбрать файл</button>
+            <button class="button predict-btn-txt" id="predictBtnTxt">Предсказать</button>
+        </div>
+        <p class="file-name" id="fileNameTxt">Файл не выбран</p>
+        <p class="output" id="outputTxt"></p>
+    </div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
