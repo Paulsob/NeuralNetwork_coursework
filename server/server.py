@@ -2,9 +2,15 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import random
 from server.models.music.predict_one_h5 import run_prediction
+from server.models.use_model import run_prediction_image
+from server.models.images import Image
+import os
+
 
 app = Flask(__name__, static_folder='../client')
 CORS(app)
+image_model = Image()
+
 
 
 # ==================== Статические файлы ====================
@@ -34,9 +40,9 @@ def favicon():
 
 
 
-def images_predict_stub(file_storage):
-    """Заглушка для изображений"""
-    return {"prediction": random.randint(1, 10)}
+# def images_predict_stub(file_storage):
+#     """Заглушка для изображений"""
+#     return {"prediction": random.randint(1, 10)}
 
 
 def text_predict_stub(text):
@@ -71,12 +77,26 @@ def predict():
                 })
 
             # Изображения - заглушка
+            # Инициализируем модель живописи один раз (лучше сделать выше, см. ниже)
+            
             elif file_type == 'image':
-                result = images_predict_stub(file)
+                # Сохраняем временно загруженный файл
+                temp_path = f"temp_{file.filename}"
+                file.save(temp_path)
+
+                # Запускаем предсказание
+                artist, confidence = image_model.predict(temp_path)
+
+                # Удаляем временный файл
+                os.remove(temp_path)
+
                 return jsonify({
                     "type": "image",
-                    "result": result
+                    "artist": artist,
+                    "confidence": confidence
                 })
+
+
 
         # Текст (JSON)
         else:

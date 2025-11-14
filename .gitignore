@@ -33,3 +33,5 @@ build/
 .env.local
 
 server/models/music/artist20-temp.joblib.pkl
+
+final_inceptionresnetv3_art_model_v5.h5
