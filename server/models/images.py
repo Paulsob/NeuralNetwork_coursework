@@ -31,6 +31,7 @@ class Image:
     )
 
     def __init__(self):
+        # Загружаем модель (TensorFlow 2.10.1 поддерживает Lambda слои без дополнительных параметров)
         self.model = load_model(self.MODEL_PATH)
         with open(self.CLASSES_PATH, "r", encoding="utf-8") as fp:
             raw_mapping = json.load(fp)

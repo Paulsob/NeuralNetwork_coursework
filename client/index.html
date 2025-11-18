@@ -43,11 +43,11 @@
         <h1 class="text_name">Текст</h1>
 
         <div class="input-row">
-            <input type="file" id="inputTxt" accept="audio/*" hidden>
-            <button class="button upload-btn-txt" id="uploadBtnTxt">Выбрать файл</button>
+            <textarea id="inputTxt" placeholder="Введите текст стихотворения..." rows="10" style="width: 100%; padding: 10px; font-family: inherit; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;"></textarea>
+        </div>
+        <div class="input-row" style="margin-top: 10px;">
             <button class="button predict-btn-txt" id="predictBtnTxt">Предсказать</button>
         </div>
-        <p class="file-name" id="fileNameTxt">Файл не выбран</p>
         <p class="output" id="outputTxt"></p>
     </div>
 </section>

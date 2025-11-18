@@ -22,9 +22,20 @@ document.getElementById("predictBtnImg").onclick = async () => {
 
   try {
     const data = await resp.json();
-    document.getElementById(
-      "outputImg"
-    ).innerText = `Результат: ${data.final_result}`;
+    let text = "";
+    if (data?.error) {
+      text = `Ошибка: ${data.error}`;
+    } else if (data?.type === "image") {
+      const { artist, confidence } = data;
+      text = `Автор: ${artist ?? "unknown"}, уверенность: ${
+        confidence !== undefined ? confidence.toFixed(3) : "—"
+      }`;
+    } else if (data?.artist) {
+      text = `Автор: ${data.artist}`;
+    } else {
+      text = JSON.stringify(data, null, 2);
+    }
+    document.getElementById("outputImg").innerText = text;
   } catch (e) {
     console.error("Error:", e);
     document.getElementById("outputImg").innerText = `Ошибка: ${e}`;
@@ -116,9 +127,10 @@ document.getElementById("inputMusic").addEventListener("change", (event) => {
 
 
 document.getElementById("predictBtnTxt").onclick = async () => {
-  const text = document.getElementById("inputTxt").value.trim();
+  const textInput = document.getElementById("inputTxt");
+  const text = textInput.value.trim();
   if (!text) {
-    alert("Выберите текст");
+    alert("Введите текст стихотворения");
     return;
   }
 
@@ -130,23 +142,23 @@ document.getElementById("predictBtnTxt").onclick = async () => {
 
   try {
     const data = await resp.json();
-    document.getElementById(
-      "outputTxt"
-    ).innerText = `Результат: ${data.final_result}`;
+    
+    if (data.error) {
+      document.getElementById("outputTxt").innerText = `Ошибка: ${data.error}`;
+      return;
+    }
+
+    if (data.type === "text" && data.author) {
+      document.getElementById("outputTxt").innerText = 
+        `Автор: ${data.author}\nУверенность: ${data.confidence}%`;
+    } else {
+      document.getElementById("outputTxt").innerText = 
+        `Результат: ${JSON.stringify(data, null, 2)}`;
+    }
   } catch (e) {
     console.error("Error:", e);
-    document.getElementById("outputTxt").innerText = `Ошибка: ${e}`;
+    document.getElementById("outputTxt").innerText = `Ошибка: ${e.message}`;
   }
 };
 
-// Кнопка выбора файла
-document.getElementById("uploadBtnTxt").onclick = () => {
-  document.getElementById("inputTxt").click();
-};
-
-// Отображение имени выбранного файла
-document.getElementById("inputTxt").addEventListener("change", (event) => {
-  const fileNameEl = document.getElementById("fileNameTxt");
-  const file = event.target.files[0];
-  fileNameEl.textContent = file ? file.name : "Файл не выбран";
-});
+// Для текста больше не нужны обработчики файлов - используется textarea

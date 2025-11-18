@@ -4,12 +4,14 @@ import random
 from server.models.music.predict_one_h5 import run_prediction
 from server.models.use_model import run_prediction_image
 from server.models.images import Image
+from server.models.text import Text
 import os
 
 
 app = Flask(__name__, static_folder='../client')
 CORS(app)
 image_model = Image()
+text_model = Text()
 
 
 
@@ -45,9 +47,7 @@ def favicon():
 #     return {"prediction": random.randint(1, 10)}
 
 
-def text_predict_stub(text):
-    """Заглушка для текста"""
-    return {"prediction": random.randint(1, 10)}
+# Функция text_predict_stub удалена - используем реальную модель text_model
 
 
 # ==================== API ====================
@@ -108,10 +108,12 @@ def predict():
             if not text:
                 return jsonify({"error": "Текст не найден"}), 400
 
-            result = text_predict_stub(text)
+            # Используем реальную модель для предсказания
+            result = text_model.predict(text)
             return jsonify({
                 "type": "text",
-                "result": result
+                "author": result["author"],
+                "confidence": result["confidence"]
             })
 
         return jsonify({"error": "Неизвестный тип данных"}), 400
