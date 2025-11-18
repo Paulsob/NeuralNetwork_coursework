@@ -35,3 +35,8 @@ build/
 server/models/music/artist20-temp.joblib.pkl
 
 final_inceptionresnetv3_art_model_v5.h5
+
+data/text/
+temp_*.jpg
+*.tmp
+
