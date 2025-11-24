@@ -1,6 +1,6 @@
 from models.images import Image
 from models.music import Music
-from models.text import Text
+from archive.text import Text
 
 
 class EnsembleWrapper:

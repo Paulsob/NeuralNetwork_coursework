@@ -53,7 +53,9 @@ body {
 
 .content-box {
   width: 1000px;
-  height: 600px;
+  /* height: 600px;  <-- УДАЛИТЬ ЭТУ СТРОКУ */
+  min-height: 600px; /* <-- ДОБАВИТЬ ЭТУ СТРОКУ */
+  height: auto;      /* Позволяет блоку растягиваться, если контента много */
   padding: 60px;
   border-radius: 20px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
@@ -62,6 +64,34 @@ body {
   transition: transform 0.3s ease;
 }
 
+
+.upload-row-fix {
+  display: flex;
+  align-items: center;    /* Выравнивает центры элементов по одной линии */
+  justify-content: center;
+  gap: 20px;              /* Расстояние между кнопкой и именем файла */
+  margin-bottom: 25px;
+  width: 100%;
+}
+
+.upload-row-fix .upload-btn-txt {
+  margin: 0; /* Убираем margin-top: 35px */
+  flex: 0 0 auto; /* Кнопка не растягивается лишнего */
+  width: auto;
+  padding: 18px 100px; /* Чуть компактнее, чтобы смотрелось аккуратно */
+}
+
+.upload-row-fix .file-name {
+  margin: 0; /* Убираем margin-top: -10px */
+  align-self: center;
+  background-color: rgba(255,255,255,0.7);
+  padding: 18px 20px; /* Подгоняем высоту под кнопку */
+  border-radius: 16px;
+  min-width: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .content-box:hover {
   transform: translateY(-3px);
@@ -123,6 +153,10 @@ body {
   color: wheat;
 }
 
+.input_text{
+    font-size: 30px;
+}
+
 .input-row {
   display: flex;
   justify-content: space-between;
@@ -169,7 +203,7 @@ body {
 
 .upload-btn-txt, .predict-btn-txt {
   flex: 1;
-  padding: 18px 0;
+  padding: 10px 0;
   border: none;
   border-radius: 16px;
   background-color: #731486;
@@ -179,6 +213,21 @@ body {
   cursor: pointer;
   transition: all 0.25s ease;
 }
+
+.outputTxt {
+  width: 100%;
+  min-height: 200px; /* задаем минимальную высоту */
+  max-height: 300px; /* если надо ограничить */
+  overflow-y: auto; /* скролл при переполнении */
+  background: rgba(255, 255, 255, 0.8);
+  color: black;
+  font-family: monospace;
+  font-size: 24px; /* увеличиваем шрифт */
+  padding: 16px;
+  border-radius: 16px;
+  white-space: pre-wrap; /* чтобы переносы сохранялись */
+}
+
 .upload-btn-txt:hover,
 .predict-btn-txt:hover {
   background-color: #b554c9;
@@ -200,7 +249,7 @@ body {
 
 
 .output {
-  margin-top: 70px;
+  margin-top: 30px;
   font-family: monospace;
   background: rgba(255, 255, 255, 0.3);
   color: white;

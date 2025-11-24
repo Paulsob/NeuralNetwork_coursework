@@ -4,6 +4,7 @@ console.log("Image button:", document.getElementById("predictBtnImg"));
 console.log("Music button:", document.getElementById("predictBtnMusic"));
 console.log("Text button:", document.getElementById("predictBtnTxt"));
 
+// =================== Изображение ===================
 document.getElementById("predictBtnImg").onclick = async () => {
   const fileInput = document.getElementById("inputImg");
   if (!fileInput.files.length) {
@@ -15,14 +16,15 @@ document.getElementById("predictBtnImg").onclick = async () => {
   formData.append("file", fileInput.files[0]);
   formData.append("type", "image");
 
-  const resp = await fetch("/predict", {
-    method: "POST",
-    body: formData,
-  });
-
   try {
+    const resp = await fetch("/predict", {
+      method: "POST",
+      body: formData,
+    });
+
     const data = await resp.json();
     let text = "";
+
     if (data?.error) {
       text = `Ошибка: ${data.error}`;
     } else if (data?.type === "image") {
@@ -35,6 +37,7 @@ document.getElementById("predictBtnImg").onclick = async () => {
     } else {
       text = JSON.stringify(data, null, 2);
     }
+
     document.getElementById("outputImg").innerText = text;
   } catch (e) {
     console.error("Error:", e);
@@ -54,6 +57,7 @@ document.getElementById("inputImg").addEventListener("change", (event) => {
   fileNameEl.textContent = file ? file.name : "Файл не выбран";
 });
 
+// =================== Музыка ===================
 document.getElementById("predictBtnMusic").onclick = async () => {
   const fileInput = document.getElementById("inputMusic");
   if (!fileInput.files.length) {
@@ -73,15 +77,15 @@ document.getElementById("predictBtnMusic").onclick = async () => {
 
     const data = await resp.json();
     let text = "";
+
     if (data && data.type === "music") {
       const r = data.result || {};
+
       if (Array.isArray(r.labels) && Array.isArray(r.scores)) {
         const lines = r.labels.map(
           (label, i) => `${i + 1}. ${label}: ${(r.scores[i] ?? 0).toFixed(3)}`
         );
-        text =
-          `Топ-${lines.length}:
-` + lines.join("\n");
+        text = `Топ-${lines.length}:\n` + lines.join("\n");
       } else if (
         Array.isArray(r.indices) &&
         (Array.isArray(r.scores) || Array.isArray(r.distances))
@@ -90,11 +94,13 @@ document.getElementById("predictBtnMusic").onclick = async () => {
         const lines = r.indices.map(
           (idx, i) => `${i + 1}. #${idx}: ${(vals[i] ?? 0).toFixed(3)}`
         );
-        text =
-          `Топ-${lines.length} (индексы):
-` + lines.join("\n");
+        text = `Топ-${lines.length} (индексы):\n` + lines.join("\n");
       } else if (r.prediction !== undefined) {
         text = `Предсказание: ${r.prediction}`;
+      } else if (data.author) {
+        // Нормализованный вывод
+        const confidence = data.confidence !== undefined ? `${data.confidence}%` : "—";
+        text = `Автор: ${data.author}`;
       } else if (data.embedding_dim) {
         text = `Вектор признаков размерности ${data.embedding_dim}.`;
       } else {
@@ -107,8 +113,10 @@ document.getElementById("predictBtnMusic").onclick = async () => {
     } else {
       text = JSON.stringify(data, null, 2);
     }
+
     document.getElementById("outputMusic").innerText = text;
   } catch (e) {
+    console.error("Error:", e);
     document.getElementById("outputMusic").innerText = `Ошибка: ${e}`;
   }
 };
@@ -125,34 +133,78 @@ document.getElementById("inputMusic").addEventListener("change", (event) => {
   fileNameEl.textContent = file ? file.name : "Файл не выбран";
 });
 
+// =================== Текст ===================
+// --- Логика для раздела ТЕКСТ ---
 
+// 1. Кнопка выбора файла (Текст)
+document.getElementById("uploadBtnTxt").onclick = () => {
+  document.getElementById("inputTxtFile").click();
+};
+
+// 2. Отображение имени выбранного файла (Текст)
+document.getElementById("inputTxtFile").addEventListener("change", (event) => {
+  const fileNameEl = document.getElementById("fileNameTxt");
+  const file = event.target.files[0];
+  fileNameEl.textContent = file ? file.name : "Файл не выбран";
+
+  // Очищаем поле ввода текста, чтобы пользователь понимал, что приоритет у файла
+  if (file) {
+      document.getElementById("inputTxt").value = "";
+      document.getElementById("inputTxt").placeholder = "Выбран файл. Для ввода текста вручную удалите файл или перезагрузите страницу.";
+      document.getElementById("inputTxt").disabled = true;
+  } else {
+      document.getElementById("inputTxt").disabled = false;
+      document.getElementById("inputTxt").placeholder = "Или введите текст стихотворения здесь...";
+  }
+});
+
+// 3. Кнопка "Предсказать" (Текст)
 document.getElementById("predictBtnTxt").onclick = async () => {
+  const fileInput = document.getElementById("inputTxtFile");
   const textInput = document.getElementById("inputTxt");
-  const text = textInput.value.trim();
-  if (!text) {
-    alert("Введите текст стихотворения");
+  const textVal = textInput.value.trim();
+
+  const hasFile = fileInput.files.length > 0;
+  const hasText = textVal.length > 0;
+
+  if (!hasFile && !hasText) {
+    alert("Загрузите файл или введите текст стихотворения");
     return;
   }
 
-  const resp = await fetch("/predict", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, type: "text" }),
-  });
+  const formData = new FormData();
+  formData.append("type", "text");
+
+  // Если есть файл, отправляем его
+  if (hasFile) {
+    formData.append("file", fileInput.files[0]);
+  }
+  // Иначе отправляем текст
+  else {
+    formData.append("text", textVal);
+  }
 
   try {
+    // ВАЖНО: Убираем headers: { "Content-Type": "application/json" },
+    // так как при использовании FormData браузер сам выставит нужные заголовки и boundary
+    const resp = await fetch("/predict", {
+      method: "POST",
+      body: formData,
+    });
+
     const data = await resp.json();
-    
+
     if (data.error) {
       document.getElementById("outputTxt").innerText = `Ошибка: ${data.error}`;
       return;
     }
 
     if (data.type === "text" && data.author) {
-      document.getElementById("outputTxt").innerText = 
-        `Автор: ${data.author}\nУверенность: ${data.confidence}%`;
+      document.getElementById("outputTxt").innerText =
+        `Автор: ${data.author}\nУверенность: ${data.confidence}`;
     } else {
-      document.getElementById("outputTxt").innerText = 
+      // Если пришел другой формат ответа
+      document.getElementById("outputTxt").innerText =
         `Результат: ${JSON.stringify(data, null, 2)}`;
     }
   } catch (e) {
@@ -160,5 +212,3 @@ document.getElementById("predictBtnTxt").onclick = async () => {
     document.getElementById("outputTxt").innerText = `Ошибка: ${e.message}`;
   }
 };
-
-// Для текста больше не нужны обработчики файлов - используется textarea

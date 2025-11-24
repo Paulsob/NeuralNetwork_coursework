@@ -42,9 +42,17 @@
     <div class="content-box gradient-beige">
         <h1 class="text_name">Текст</h1>
 
-        <div class="input-row">
-            <textarea id="inputTxt" placeholder="Введите текст стихотворения..." rows="10" style="width: 100%; padding: 10px; font-family: inherit; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;"></textarea>
+        <div class="input-row upload-row-fix">
+            <input type="file" id="inputTxtFile" accept=".txt,.doc,.docx,.pdf" hidden>
+            <button class="button upload-btn-txt" id="uploadBtnTxt">Загрузить файл</button>
+            <span id="fileNameTxt" class="file-name">Файл не выбран</span>
         </div>
+
+        <div class="input-row">
+            <textarea id="inputTxt" placeholder="Или введите текст стихотворения здесь..." rows="6"
+                      style="width: 100%; padding: 10px; font-family: inherit; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;"></textarea>
+        </div>
+
         <div class="input-row" style="margin-top: 10px;">
             <button class="button predict-btn-txt" id="predictBtnTxt">Предсказать</button>
         </div>

@@ -1,21 +1,16 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import random
-from server.models.music.predict_one_h5 import run_prediction
-from server.models.use_model import run_prediction_image
-from server.models.images import Image
-from server.models.text import Text
+from models.music.predict_one_h5 import run_prediction
+from models.images import Image
+from models.text_model import predict as predict_text
 import os
-
+import docx
 
 app = Flask(__name__, static_folder='../client')
 CORS(app)
+
 image_model = Image()
-text_model = Text()
 
-
-
-# ==================== Статические файлы ====================
 @app.route("/")
 def home():
     return send_from_directory(app.static_folder, 'index.html')
@@ -31,64 +26,78 @@ def favicon():
     return '', 204
 
 
-# ==================== Функции предсказаний ====================
-
-# def run_prediction_music(file_storage):
-#     """
-#     Ваша функция загрузки модели и предсказания для музыки
-#     file_storage - FileStorage объект из Flask
-#     """
-#     return
-
-
-
-# def images_predict_stub(file_storage):
-#     """Заглушка для изображений"""
-#     return {"prediction": random.randint(1, 10)}
-
-
-# Функция text_predict_stub удалена - используем реальную модель text_model
-
-
-# ==================== API ====================
-
 @app.route("/predict", methods=["POST"])
 def predict():
-    """
-    Обработка запросов:
-    - FormData с file + type='music' или 'image'
-    - JSON с text + type='text'
-    """
     try:
-        # Файлы (музыка, изображения)
+        # Проверяем multipart/form-data (здесь приходят файлы И новый текстовый ввод)
         if request.content_type and 'multipart/form-data' in request.content_type:
-            file = request.files.get('file')
-            file_type = request.form.get('type')
+            req_type = request.form.get('type')
 
-            if not file:
-                return jsonify({"error": "Файл не найден"}), 400
+            # --- 1. ОБРАБОТКА ТЕКСТА (Файл или Ввод) ---
+            if req_type == 'text':
+                text_content = ""
 
-            # Музыка - реальная модель
-            if file_type == 'music':
+                # Вариант А: Пришел файл (.txt или .docx)
+                if 'file' in request.files:
+                    file = request.files['file']
+                    filename = file.filename.lower()
+
+                    if filename.endswith('.txt'):
+                        text_content = file.read().decode('utf-8')
+                    elif filename.endswith('.docx'):
+                        doc = docx.Document(file)
+                        text_content = "\n".join([p.text for p in doc.paragraphs])
+                    else:
+                        return jsonify({"error": "Поддерживаются только .txt и .docx"}), 400
+
+                # Вариант Б: Пришел текст из поля ввода
+                elif 'text' in request.form:
+                    text_content = request.form['text']
+
+                else:
+                    return jsonify({"error": "Нет текста для анализа"}), 400
+
+                # Проверка на пустоту
+                if not text_content.strip():
+                    return jsonify({"error": "Текст пуст"}), 400
+
+                # Предсказание
+                poet, confidence = predict_text(text_content)
+                return jsonify({
+                    "type": "text",
+                    "author": poet,
+                    "confidence": round(float(confidence),3)
+                })
+
+            # --- 2. ОБРАБОТКА МУЗЫКИ ---
+            elif req_type == 'music':
+                file = request.files.get('file')
+                if not file:
+                    return jsonify({"error": "Аудиофайл не найден"}), 400
+
                 result = run_prediction(wav_path=file)
                 return jsonify({
                     "type": "music",
-                    "Автор": result
+                    "author": result
                 })
 
-            # Изображения - заглушка
-            # Инициализируем модель живописи один раз (лучше сделать выше, см. ниже)
-            
-            elif file_type == 'image':
-                # Сохраняем временно загруженный файл
+            # --- 3. ОБРАБОТКА ИЗОБРАЖЕНИЙ ---
+            elif req_type == 'image':
+                file = request.files.get('file')
+                if not file:
+                    return jsonify({"error": "Изображение не найдено"}), 400
+
+                # Сохраняем временно
                 temp_path = f"temp_{file.filename}"
                 file.save(temp_path)
 
-                # Запускаем предсказание
-                artist, confidence = image_model.predict(temp_path)
-
-                # Удаляем временный файл
-                os.remove(temp_path)
+                # Предсказание
+                try:
+                    artist, confidence = image_model.predict(temp_path)
+                finally:
+                    # Удаляем даже если была ошибка
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
 
                 return jsonify({
                     "type": "image",
@@ -96,29 +105,24 @@ def predict():
                     "confidence": confidence
                 })
 
-
-
-        # Текст (JSON)
-        else:
+        # Поддержка старого JSON формата (на всякий случай)
+        elif request.is_json:
             content = request.get_json()
-            if not content:
-                return jsonify({"error": "JSON данные не найдены"}), 400
-
             text = content.get("text", "")
             if not text:
                 return jsonify({"error": "Текст не найден"}), 400
 
-            # Используем реальную модель для предсказания
-            result = text_model.predict(text)
+            poet, confidence = predict_text(text)
             return jsonify({
                 "type": "text",
-                "author": result["author"],
-                "confidence": result["confidence"]
+                "author": poet,
+                "confidence": float(confidence * 100)
             })
 
-        return jsonify({"error": "Неизвестный тип данных"}), 400
+        return jsonify({"error": "Неизвестный тип данных или запроса"}), 400
 
     except Exception as e:
+        print(f"Server Error: {e}")  # Полезно видеть ошибку в консоли сервера
         return jsonify({"error": str(e)}), 500
 
 
