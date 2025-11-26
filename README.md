@@ -15,14 +15,13 @@
 ## 2. Установка
 ### Клонируйте репозиторий
 git clone https://github.com/Paulsob/NeuralNetwork_coursework
-cd author-detector
 
 ### Создайте виртуальное окружение
 python -m venv venv
-#### Linux/Mac
-source venv/bin/activate  # Linux/Mac
-#### Или для Windows: 
-venv\Scripts\activate
+* Linux/Mac
+  * source venv/bin/activate  # Linux/Mac
+* Или для Windows: 
+  * venv\Scripts\activate
 
 ## Установите зависимости
 pip install -r requirements.txt
@@ -34,8 +33,7 @@ pip install -r requirements.txt
 
 ## 4. Использование
 * Откройте интерфейс
-* Перейдите в браузере по адресу:
-* http://localhost:5000
+* Перейдите в браузере по адресу http://localhost:5000
 * Выберите тип анализа
   * Изображения: Загрузите файл (JPG, PNG) и нажмите «Предсказать»
   * Музыка: Загрузите аудиофайл (MP3, WAV)
