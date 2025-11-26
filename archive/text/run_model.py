@@ -29,5 +29,5 @@ if __name__ == "__main__":
         text = "\n".join(lines)
 
         author, conf = predictor.predict(text)
-        print(f"\n🎯 Автор: {author}")
-        print(f"📊 Уверенность: {conf:.2f}%\n")
+        print(f"\nАвтор: {author}")
+        print(f"Уверенность: {conf:.2f}%\n")

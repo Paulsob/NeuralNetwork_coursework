@@ -7,11 +7,9 @@ from tensorflow.keras.preprocessing import image
 from pathlib import Path
 
 
-# Используем абсолютные пути относительно расположения файла
 MODEL_PATH = Path(__file__).resolve().parent / "images" / "final_inceptionresnetv3_art_model_v5.h5"
 CLASS_PATH = Path(__file__).resolve().parent / "images" / "class_indices.json"
 
-# Загружаем модель (TensorFlow 2.10.1 поддерживает Lambda слои без дополнительных параметров)
 model = load_model(MODEL_PATH)
 with open(CLASS_PATH, "r", encoding="utf-8") as f:
     idx_to_class = json.load(f)

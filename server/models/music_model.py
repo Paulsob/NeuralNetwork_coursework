@@ -63,7 +63,6 @@ class Music:
                 y = data.astype(np.float32)
         except Exception:
             import tempfile, os
-            # Try to guess extension by header to help external decoders
             header = wav_bytes[:12]
             if header.startswith(b"RIFF"):
                 ext = ".wav"
@@ -83,11 +82,9 @@ class Music:
                 except Exception:
                     pass
 
-        # Force mono
         if y.ndim == 2:
             y = np.mean(y, axis=1)
 
-        # Trim/pad to duration_sec
         target_len = self.sample_rate * self.duration_sec
         if y.shape[0] > target_len:
             y = y[:target_len]
@@ -98,10 +95,8 @@ class Music:
         return y.astype(np.float32)
 
     def _to_features(self, y: NDArray[np.float32]) -> NDArray[np.float32]:
-        # Default: log-mel spectrogram
         mel = librosa.feature.melspectrogram(y=y, sr=self.sample_rate, n_mels=self.n_mels, hop_length=self.hop_length)
         log_mel = librosa.power_to_db(mel + 1e-9)
-        # Normalize per-feature
         mean = np.mean(log_mel, axis=1, keepdims=True)
         std = np.std(log_mel, axis=1, keepdims=True) + 1e-9
         norm = (log_mel - mean) / std
@@ -109,11 +104,9 @@ class Music:
 
     def _prepare_input_for_model(self, feat: NDArray[np.float32]) -> NDArray[np.float32]:
         x = feat
-        # Common conventions: (time, n_mels) or (n_mels, time)
-        # Try (time, n_mels, 1)
-        x_tn = np.transpose(x, (1, 0))  # (time, n_mels)
-        x_tn = np.expand_dims(x_tn, axis=-1)  # (time, n_mels, 1)
-        x_batch1 = np.expand_dims(x_tn, axis=0)  # (1, time, n_mels, 1)
+        x_tn = np.transpose(x, (1, 0))
+        x_tn = np.expand_dims(x_tn, axis=-1)
+        x_batch1 = np.expand_dims(x_tn, axis=0)
         return x_batch1.astype(np.float32)
 
     def _forward_embedding(self, model_input: NDArray[np.float32]) -> NDArray[np.float32]:
@@ -131,32 +124,25 @@ class Music:
     ) -> Dict[str, Any]:
         k = top_k or self.top_k
 
-        # Case 1: NearestNeighbors-like index
         if self.index_has_kneighbors:
             distances, indices = self.index.kneighbors(embedding.reshape(1, -1), n_neighbors=k)
-            # Convert distances to cosine-like scores if metric is euclidean
             d = distances[0].astype(float).tolist()
             idx = indices[0].astype(int).tolist()
             return {"indices": idx, "distances": d}
 
-        # Case 2: Classifier with probabilities
         if self.index_has_predict_proba:
             probs = self.index.predict_proba(embedding.reshape(1, -1))[0]
-            # Top-k
             top_idx = np.argsort(probs)[::-1][:k]
             top_probs = probs[top_idx].astype(float).tolist()
             idx = top_idx.astype(int).tolist()
             return {"indices": idx, "scores": top_probs}
 
-        # Case 3: Generic predict
         if self.index_has_predict:
             pred = self.index.predict(embedding.reshape(1, -1))
             return {"prediction": pred[0] if len(pred) else None}
 
-        # Case 4: Assume stored embeddings and optional labels
         if isinstance(self.index, dict) and "embeddings" in self.index:
             db_emb = np.asarray(self.index["embeddings"], dtype=np.float32)
-            # Cosine similarities
             sims = (db_emb @ embedding) / (
                 np.linalg.norm(db_emb, axis=1) * (np.linalg.norm(embedding) + 1e-12) + 1e-12
             )
@@ -167,7 +153,6 @@ class Music:
                 labels = [self.index["labels"][i] for i in top_idx]
             return {"indices": top_idx.astype(int).tolist(), "scores": top_scores, "labels": labels}
 
-        # Fallback
         return {"embedding_dim": int(embedding.shape[0])}
 
     def infer_from_wav_bytes(self, wav_bytes: bytes) -> Dict[str, Any]:

@@ -7,18 +7,6 @@ from typing import Optional, Union
 
 
 class Image:
-    """
-    Заглушка для интеграции модели живописи.
-
-    Загружает модель из server/models/images/final_inceptionresnetv3_art_model_v5.h5,
-    а также словарь классов из server/models/images/class_indices.json.
-    Метод predict по умолчанию использует один тестовый пример из data/images/Хорошие примеры.
-
-    Как адаптировать под реальную интеграцию:
-      * передавать путь к изображению через аргумент image_path;
-      * нормализовать входные данные так же, как при обучении модели;
-      * возвращать структуру данных, которую ждёт сервер (например, top-1 класс и вероятность).
-    """
 
     MODEL_PATH = Path(__file__).resolve().parent / "images" / "final_inceptionresnetv3_art_model_v5.h5"
     CLASSES_PATH = Path(__file__).resolve().parent / "images" / "class_indices.json"

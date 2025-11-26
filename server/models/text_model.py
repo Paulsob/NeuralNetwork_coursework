@@ -77,12 +77,11 @@ if __name__ == "__main__":
                 exit()
 
             if line == "":
-                # пустая строка — завершаем ввод стихотворения
                 break
 
             lines.append(line)
 
-        if not lines:  # если пользователь просто нажал Enter
+        if not lines:
             print("Выход.")
             break
 

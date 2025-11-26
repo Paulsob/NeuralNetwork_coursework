@@ -29,15 +29,13 @@ def favicon():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        # Проверяем multipart/form-data (здесь приходят файлы И новый текстовый ввод)
         if request.content_type and 'multipart/form-data' in request.content_type:
             req_type = request.form.get('type')
 
-            # --- 1. ОБРАБОТКА ТЕКСТА (Файл или Ввод) ---
+            # текст
             if req_type == 'text':
                 text_content = ""
 
-                # Вариант А: Пришел файл (.txt или .docx)
                 if 'file' in request.files:
                     file = request.files['file']
                     filename = file.filename.lower()
@@ -50,18 +48,15 @@ def predict():
                     else:
                         return jsonify({"error": "Поддерживаются только .txt и .docx"}), 400
 
-                # Вариант Б: Пришел текст из поля ввода
                 elif 'text' in request.form:
                     text_content = request.form['text']
 
                 else:
                     return jsonify({"error": "Нет текста для анализа"}), 400
 
-                # Проверка на пустоту
                 if not text_content.strip():
                     return jsonify({"error": "Текст пуст"}), 400
 
-                # Предсказание
                 poet, confidence = predict_text(text_content)
                 return jsonify({
                     "type": "text",
@@ -69,7 +64,7 @@ def predict():
                     "confidence": round(float(confidence),3)
                 })
 
-            # --- 2. ОБРАБОТКА МУЗЫКИ ---
+            # музыка
             elif req_type == 'music':
                 file = request.files.get('file')
                 if not file:
@@ -81,21 +76,18 @@ def predict():
                     "author": result
                 })
 
-            # --- 3. ОБРАБОТКА ИЗОБРАЖЕНИЙ ---
+            # картины
             elif req_type == 'image':
                 file = request.files.get('file')
                 if not file:
                     return jsonify({"error": "Изображение не найдено"}), 400
 
-                # Сохраняем временно
                 temp_path = f"temp_{file.filename}"
                 file.save(temp_path)
 
-                # Предсказание
                 try:
                     artist, confidence = image_model.predict(temp_path)
                 finally:
-                    # Удаляем даже если была ошибка
                     if os.path.exists(temp_path):
                         os.remove(temp_path)
 
@@ -105,7 +97,6 @@ def predict():
                     "confidence": confidence
                 })
 
-        # Поддержка старого JSON формата (на всякий случай)
         elif request.is_json:
             content = request.get_json()
             text = content.get("text", "")

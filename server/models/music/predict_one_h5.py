@@ -1,10 +1,6 @@
-# -*- coding: utf-8 -*-
 """
-predict_one_h5.py
 Извлекает embedding для одного wav (gu.wav) и сравнивает с artist20-temp.joblib.pkl.
 Использует полностью сохранённую модель в формате .h5
-Запуск (в папке src):
-    python predict_one_h5.py
 """
 import os
 import numpy as np
@@ -15,7 +11,6 @@ from tensorflow.keras.models import load_model
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# Параметры
 SR = 16000
 N_MELS = 128
 N_FFT = 2048
@@ -36,10 +31,8 @@ def load_joblib(path):
 
 
 def build_enroll_dict(obj):
-    # если dict — возвращаем как есть
     if isinstance(obj, dict):
         return obj
-    # если list-like: [predictY_train, Y_train, ...]
     if isinstance(obj, (list, tuple)) and len(obj) >= 2:
         predictY_train = np.array(obj[0])
         Y_train = np.array(obj[1])
@@ -105,28 +98,22 @@ def run_prediction(
     print("[INFO] model_path:", model_path)
     print("[INFO] artist joblib:", joblib_path)
 
-    # 1) load artists joblib
     job = load_joblib(joblib_path)
     enroll = build_enroll_dict(job)
 
-    # 2) convert wav -> slices
     X = wav_to_slices(wav_path, slice_len)
     print("[INFO] Generated {} slices from wav".format(X.shape[0]))
     X_in = X.reshape((X.shape[0], X.shape[1], X.shape[2], 1))
 
-    # 3) load full model
     model = load_model(model_path)
     print("[INFO] Model loaded:", model_path)
 
-    # 4) compute embeddings (например, берем предпоследний слой)
     from tensorflow.keras.models import Model
     embedding_model = Model(inputs=model.inputs, outputs=model.layers[-4].output)
     preds = embedding_model.predict(X_in)
     emb = np.mean(preds, axis=0)
     print("[INFO] Obtained embedding vector of length", emb.shape)
 
-    # 5) compare embeddings
-    # 5) compare embeddings
     top = compare_embedding(emb, enroll, topn=10)
     best_lbl, best_dist = top[0]
     print(f"Best match: {best_lbl}, distance={best_dist:.4f}")

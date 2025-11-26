@@ -1,10 +1,8 @@
-// Проверяем, что элементы существуют
 console.log("Loading script...");
 console.log("Image button:", document.getElementById("predictBtnImg"));
 console.log("Music button:", document.getElementById("predictBtnMusic"));
 console.log("Text button:", document.getElementById("predictBtnTxt"));
 
-// =================== Изображение ===================
 document.getElementById("predictBtnImg").onclick = async () => {
   const fileInput = document.getElementById("inputImg");
   if (!fileInput.files.length) {
@@ -45,19 +43,16 @@ document.getElementById("predictBtnImg").onclick = async () => {
   }
 };
 
-// Кнопка выбора файла
 document.getElementById("uploadBtnImg").onclick = () => {
   document.getElementById("inputImg").click();
 };
 
-// Отображение имени выбранного файла
 document.getElementById("inputImg").addEventListener("change", (event) => {
   const fileNameEl = document.getElementById("fileNameImg");
   const file = event.target.files[0];
   fileNameEl.textContent = file ? file.name : "Файл не выбран";
 });
 
-// =================== Музыка ===================
 document.getElementById("predictBtnMusic").onclick = async () => {
   const fileInput = document.getElementById("inputMusic");
   if (!fileInput.files.length) {
@@ -98,7 +93,6 @@ document.getElementById("predictBtnMusic").onclick = async () => {
       } else if (r.prediction !== undefined) {
         text = `Предсказание: ${r.prediction}`;
       } else if (data.author) {
-        // Нормализованный вывод
         const confidence = data.confidence !== undefined ? `${data.confidence}%` : "—";
         text = `Автор: ${data.author}`;
       } else if (data.embedding_dim) {
@@ -121,33 +115,25 @@ document.getElementById("predictBtnMusic").onclick = async () => {
   }
 };
 
-// Кнопка выбора файла
 document.getElementById("uploadBtnMusic").onclick = () => {
   document.getElementById("inputMusic").click();
 };
 
-// Отображение имени выбранного файла
 document.getElementById("inputMusic").addEventListener("change", (event) => {
   const fileNameEl = document.getElementById("fileNameMusic");
   const file = event.target.files[0];
   fileNameEl.textContent = file ? file.name : "Файл не выбран";
 });
 
-// =================== Текст ===================
-// --- Логика для раздела ТЕКСТ ---
-
-// 1. Кнопка выбора файла (Текст)
 document.getElementById("uploadBtnTxt").onclick = () => {
   document.getElementById("inputTxtFile").click();
 };
 
-// 2. Отображение имени выбранного файла (Текст)
 document.getElementById("inputTxtFile").addEventListener("change", (event) => {
   const fileNameEl = document.getElementById("fileNameTxt");
   const file = event.target.files[0];
   fileNameEl.textContent = file ? file.name : "Файл не выбран";
 
-  // Очищаем поле ввода текста, чтобы пользователь понимал, что приоритет у файла
   if (file) {
       document.getElementById("inputTxt").value = "";
       document.getElementById("inputTxt").placeholder = "Выбран файл. Для ввода текста вручную удалите файл или перезагрузите страницу.";
@@ -158,7 +144,6 @@ document.getElementById("inputTxtFile").addEventListener("change", (event) => {
   }
 });
 
-// 3. Кнопка "Предсказать" (Текст)
 document.getElementById("predictBtnTxt").onclick = async () => {
   const fileInput = document.getElementById("inputTxtFile");
   const textInput = document.getElementById("inputTxt");
@@ -175,18 +160,14 @@ document.getElementById("predictBtnTxt").onclick = async () => {
   const formData = new FormData();
   formData.append("type", "text");
 
-  // Если есть файл, отправляем его
   if (hasFile) {
     formData.append("file", fileInput.files[0]);
   }
-  // Иначе отправляем текст
   else {
     formData.append("text", textVal);
   }
 
   try {
-    // ВАЖНО: Убираем headers: { "Content-Type": "application/json" },
-    // так как при использовании FormData браузер сам выставит нужные заголовки и boundary
     const resp = await fetch("/predict", {
       method: "POST",
       body: formData,
@@ -203,7 +184,6 @@ document.getElementById("predictBtnTxt").onclick = async () => {
       document.getElementById("outputTxt").innerText =
         `Автор: ${data.author}\nУверенность: ${data.confidence}`;
     } else {
-      // Если пришел другой формат ответа
       document.getElementById("outputTxt").innerText =
         `Результат: ${JSON.stringify(data, null, 2)}`;
     }
